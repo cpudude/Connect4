@@ -22,7 +22,7 @@ public class C4GameBoard extends JApplet
     private static JPanel main, board, sideBar, menu, game, buttonHolder, emptyPanel;
     private static JButton col1, col2, col3, col4 ,col5, col6, col7, col8;
     private static JButton play, pause, quit, changeColor;
-    
+    private static JLabel img;
     
     public C4GameBoard()
     {
@@ -37,23 +37,22 @@ public class C4GameBoard extends JApplet
         
         sideBar = new JPanel();
         sideBar.setLayout(new GridLayout(2, 1));
-        sideBar.setBackground(Color.lightGray);
         
         game = new JPanel();
         game.setLayout(new FlowLayout());
-        game.setBackground(Color.yellow);
+        game.setBackground(Color.YELLOW);
         
         buttonHolder = new JPanel();
         buttonHolder.setLayout(new GridLayout(1, 8));
-        buttonHolder.setBackground(Color.pink);
+        buttonHolder.setBackground(Color.PINK);
         
         menu = new JPanel();
         menu.setLayout(new GridLayout(4, 1));
-        menu.setBackground(Color.gray);
+        menu.setBackground(Color.BLACK);
         
         emptyPanel = new JPanel();
         emptyPanel.setLayout(new BorderLayout());
-        emptyPanel.setBackground(Color.gray);
+        emptyPanel.setBackground(Color.BLACK);
         
         //create buttons
         play = new JButton("Play");
@@ -79,6 +78,9 @@ public class C4GameBoard extends JApplet
         col6.addActionListener(new ButtonListener());
         col7.addActionListener(new ButtonListener());
         col8.addActionListener(new ButtonListener());
+        
+        //Create label that hold image
+        img = new JLabel(new ImageIcon("path_to_image.png"));
         
         //add components to panels
         buttonHolder.add(col1);

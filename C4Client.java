@@ -11,31 +11,44 @@ import javax.swing.*;
 //import javax.swing.border.LineBorder;
 import java.io.*;
 import java.net.*;
+import javax.swing.border.LineBorder;
 
 /**
  *
  * @author lizzy
  */
-public class C4Client extends JApplet 
-        implements Runnable, C4Constants
+public class C4Client extends JApplet
+        implements Runnable
 {
     private static final int WIDTH = 1200;
     private static final int HEIGHT = 670;
     
-    private static C4Client[][] game = new C4Client[8][7];
+    private static Cell[][] game = new Cell[7][8];
     
     private static JPanel main, board, sideBar, menu, gameHolder, buttonHolder, emptyPanel;
     private static JButton col1, col2, col3, col4 ,col5, col6, col7, col8;
     private static JButton play, pause, quit, changeColor;
-    private static JLabel titleLabel, statusLabel;
+    private static JLabel message, status;
+    
+    public static int PLAYER1 = 1;
+    public static int PLAYER2 = 2;
+    public static int P1_WON = 1;
+    public static int P2_WON = 2;
+    
+    private char token1 = ' ';
+    private char token2 = ' ';
+    
     private static boolean myTurn = false;
     private static boolean continuePlaying = true;
     private static boolean waiting = true;
     private static boolean isStandAlone = false;
     
+    private DataInputStream fromServer;
+    private DataOutputStream toServer;
+    
     private String host = "localhost";
     
-    public C4Client()
+    public C4Client() 
     {
         //create panels and set layouts
         main = new JPanel();
@@ -91,6 +104,20 @@ public class C4Client extends JApplet
         col7.addActionListener(new C4Client.ButtonListener());
         col8.addActionListener(new C4Client.ButtonListener());
         
+        
+        
+    }
+    
+    public void init()
+    {
+        gameHolder.setLayout(new GridLayout(7,8));
+        for (int i = 0; i < 7; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                gameHolder.add(game[i][j] = new Cell( i, j));
+            }   
+        }
         //add components to panels
         buttonHolder.add(col1);
         buttonHolder.add(col2);
@@ -116,12 +143,8 @@ public class C4Client extends JApplet
         main.add(board, BorderLayout.CENTER);
         main.add(sideBar, BorderLayout.EAST);
         
-    }
-    
-    public void init()
-    {
-        getContentPane().add(main);
-        setSize(WIDTH,HEIGHT);
+        // Connect to the server
+        connectToServer();
     }
     
      private static class ButtonListener implements ActionListener {
@@ -169,23 +192,68 @@ public class C4Client extends JApplet
     }
   
 
-
-
-
-    
-    public void connectToServer()
-    {
+    private void connectToServer() {
+        try 
+        {  
+            // Create socket to connect to server
+            Socket socket;
+            if (isStandAlone)
+            {
+                socket = new Socket(host, 8000);
+            }
+            else
+            {
+                socket = new Socket(getCodeBase().getHost(), 8000);
+            }
         
-    }
-    
-    public void begin()
-    {
-        
+            // Create an input stream 
+            fromServer = new DataInputStream(socket.getInputStream());
+
+            // Create an output stream 
+            toServer = new DataOutputStream(socket.getOutputStream());
+        }
+        catch (Exception e) 
+        {
+            System.err.println(e);
+        }
+
+        // Control game on separate thread
+        Thread thread = new Thread(this);
+            thread.start();
     }
     
     public void run()
     {
+        try
+        {
+            int player = fromServer.readInt();
+            
+            if(player == PLAYER1)
+            {
+                activeToken = 'R';
+                opToken = 'B';
+                //log.setText("Player 1 is Red.");
+                //log.setText
+                
+                myTurn = true;
+            }
+        }
+        catch(Exception e)
+        {}
+    }
+    
+    public class Cell extends JPanel 
+    {
+        private int row;
+        private int col;
         
+        public Cell(int row, int col) 
+        {
+            this.row = row;
+            this.col = col;
+            setBorder(new LineBorder(Color.black, 1));
+        }
+         
     }
     
     public static void main(String[] args) 
@@ -205,7 +273,7 @@ public class C4Client extends JApplet
         
         //Call init() and start()
         app.init();
-        app.begin();
+        //app.start();
         
         // Display the frame
         
