@@ -1,3 +1,4 @@
+
 package c4app;
 
 import java.io.*;
@@ -16,9 +17,10 @@ import java.util.Date;
 /**
  *
  * @author lizzy
+ * @edited by Richard
  */
 public class C4GameServer extends JFrame 
-{
+implements C4Constants{
     public static int P1 = 1;
     public static int P2 = 2;
     public static int P1_WON = 1;
@@ -99,16 +101,18 @@ public class C4GameServer extends JFrame
     }      
 }
 
-class HandleSess implements Runnable
-{
+class HandleSess implements Runnable, C4Constants{
     private Socket player1;
     private Socket player2;
    
     //Create data stream obj to and from for each player
-    private DataInputStream = fromP1;
-    private DataOuputStream = toP1;
-    private DataInputStream = fromP2;
-    private DataOuputStream = toP2;
+    //added gameBoardarray - Richard
+    private int [][] gameBoard = new int [6][7];
+    private DataInputStream fromP1;
+    private DataOutputStream toP1;
+    private DataInputStream fromP2;
+    private DataOutputStream toP2;
+    
     
     //Create a play boolean
     private boolean play = true;
@@ -118,17 +122,21 @@ class HandleSess implements Runnable
     this.player1 = player1;
     this.player2 = player2;
     
+    
     //Intialize all cells
-    for(int i  = 0; i < 8; i++)
+    for(int i  = 0; i < 6; i++)
     {
         for(int j = 0; j < 7; j++)
         {
-            game[i][j] = 0;
+            gameBoard[i][j] = 0;
         }
     }
+    
+   }
+    
     //Make the thread
-    public void run()
-    {
+    public void run(){
+        
         try 
         {
             DataInputStream fromP1 = new DataInputStream(player1.getInputStream());
@@ -143,7 +151,7 @@ class HandleSess implements Runnable
                 //recieve move from player 1
                 int row = fromP1.readInt();
                 int col = fromP1.readInt();
-                game[row][col] = 1;
+                gameBoard[row][col] = 1;
                 
                 //Check if player 1 won
                 if(won(1))
@@ -155,7 +163,7 @@ class HandleSess implements Runnable
                 }
                 else 
                 {
-                    toP2.writeInt(PROCEED);
+                    toP2.writeInt(Continue);
                     
                     move(toP2, col);
                 }
@@ -169,14 +177,14 @@ class HandleSess implements Runnable
                 }
                 else if (full())
                 {
-                    toP1.writeInt(DRAW);
-                    toP2.writeInt(DRAW);
+                    toP1.writeInt(Draw);
+                    toP2.writeInt(Draw);
                     move(toP1, col);
                     break;
                 }
                 else 
                 {
-                    toP1.writeInt(PROCEED);
+                    toP1.writeInt(Continue);
                     
                     move(toP1, col);
                 }
@@ -195,11 +203,11 @@ class HandleSess implements Runnable
     
     private boolean full()
     {
-        for(int i  = 0; i < 8; i++)
+        for(int i  = 0; i < 6; i++)
         {
             for(int j = 0; j < 7; j++)
             {
-                if(game[i][j] == ' ')
+                if(gameBoard[i][j] == ' ')
                 {
                     return false;
                 }
@@ -211,13 +219,66 @@ class HandleSess implements Runnable
     
     private boolean won(int token)
     {
-        // Check all rows
-        //for(int i = 0; i < )
-        //3.check if board is full
-            
-        //4.otherwise continue
-            
-        //do steps 2-4 for player 1 and 2
+        // check for a horizontal win
+        for (int x=0; x<6; x++) 
+        {
+            for (int y=0; y<4; y++) 
+            {
+                if (gameBoard[x][y] != 0 && gameBoard[x][y] != -1 &&
+                    gameBoard[x][y] == gameBoard[x][y+1] &&
+                    gameBoard[x][y] == gameBoard[x][y+2] &&
+                    gameBoard[x][y] == gameBoard[x][y+3]) 
+                {
+                    return true;
+                }
+            }
+        }
+
+        // check for a vertical win
+        for (int x=0; x<3; x++) 
+        {
+            for (int y=0; y<7; y++) 
+            {
+                if (gameBoard[x][y] != 0 && gameBoard[x][y] != -1 &&
+                    gameBoard[x][y] == gameBoard[x+1][y] &&
+                    gameBoard[x][y] == gameBoard[x+2][y] &&
+                    gameBoard[x][y] == gameBoard[x+3][y]) 
+                {
+                    return true;
+                }
+            }
+        }
+
+        // check for a diagonal win (positive slope)
+        for (int x=0; x<3; x++) 
+        {
+            for (int y=0; y<4; y++) 
+            {
+                if (gameBoard[x][y] != 0 && gameBoard[x][y] != -1 &&
+                    gameBoard[x][y] == gameBoard[x+1][y+1] &&
+                    gameBoard[x][y] == gameBoard[x+2][y+2] &&
+                    gameBoard[x][y] == gameBoard[x+3][y+3]) 
+                {
+                    return true;
+                }
+            }
+        }
+
+        // check for a diagonal win (negative slope)
+
+        for (int x=3; x<6; x++) 
+        {
+            for (int y=0; y<4; y++) 
+            {
+                if (gameBoard[x][y] != 0 && gameBoard[x][y] != -1 &&
+                gameBoard[x][y] == gameBoard[x-1][y+1] &&
+                gameBoard[x][y] == gameBoard[x-2][+2] &&
+                gameBoard[x][y] == gameBoard[x-3][y+3]) 
+                {
+                    return true;
+                }
+            }
+        }
         return false;
     }
     
@@ -225,4 +286,3 @@ class HandleSess implements Runnable
     
     
 }
-
